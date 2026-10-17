@@ -107,7 +107,21 @@ describe('OpenAPI route coverage', () => {
     // `{ error: { type: string } }` inline schema drifts and breaks clients.
     expect(body).toContain("#/components/responses/BadRequest")
     expect(body).toContain("#/components/schemas/Error")
-    expect(body).not.toMatch(/"\berror\b"\s*:\s*\{\s*"type"\s*:\s*"string"/)
+    // components.schemas.Error defines `error: { type: string }` once — that is
+    // the shared definition, not a copy. components.responses.* envelopes
+    // (PaymentRequired, TooManyRequests, …) are referenced by $ref from routes,
+    // not copied inline. What is forbidden is an inline copy inside any
+    // operation-level response body.
+    for (const operations of Object.values(spec.paths ?? {})) {
+      for (const operation of Object.values(operations ?? {})) {
+        const responses = (operation as { responses?: Record<string, unknown> })?.responses ?? {}
+        for (const entry of Object.values(responses)) {
+          expect(JSON.stringify(entry)).not.toMatch(
+            /"\berror\b"\s*:\s*\{\s*"type"\s*:\s*"string"/,
+          )
+        }
+      }
+    }
   })
 
   it('documents error statuses (and their codes) on every route', () => {

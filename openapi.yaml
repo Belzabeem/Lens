@@ -1464,31 +1464,13 @@ paths:
                 isValid: true
                 captured: '2026-10-16'
         '400':
-          description: Malformed request or invalid payment
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VerifyResponse'
-              example:
-                isValid: false
-                invalidReason: bad_request
-                invalidMessage: Missing paymentPayload or paymentRequirements
-                captured: '2026-10-16'
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '500':
-          description: Internal verification error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VerifyResponse'
-              example:
-                isValid: false
-                invalidReason: internal_error
-                invalidMessage: Internal server error during verification
-                captured: '2026-10-16'
+          $ref: '#/components/responses/InternalServerError'
 
   /settle:
     post:
@@ -1532,18 +1514,7 @@ paths:
                 network: stellar:testnet
                 captured: '2026-10-16'
         '400':
-          description: Malformed payload
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SettleResponse'
-              example:
-                success: false
-                errorReason: invalid_exact_stellar_payload_malformed
-                errorMessage: paymentPayload.payload.transaction is not a transaction envelope.
-                transaction: ''
-                network: stellar:testnet
-                captured: '2026-10-16'
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':
@@ -1760,6 +1731,16 @@ components:
                 type: string
               retryAfter:
                 type: string
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Internal server error
+            code: internal_error
+            captured: '2026-10-16'
 
   schemas:
     Error:
